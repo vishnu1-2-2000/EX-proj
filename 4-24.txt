@@ -1,0 +1,2384 @@
+project examle code frondend-react
+...........................................................
+PRINTERVIEW
+
+import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { Link, useParams } from "react-router-dom";
+// import Select from "react-select";
+import * as  AiIcons from "react-icons/ai";
+import Navebar from "../../Navigation/Navebar";
+import Loading from "../../Loading";
+
+    function PrinterView() {
+        const[id,setId]=useState("");
+        const[processordernumber,setProcessOrderNumber]=useState("");
+        const[gtin,setGtin] =useState("");
+        const[expiration_date,setExp] =useState("");
+        const[lot,setLot]=useState("");
+        const[numbers,setNumbers]=useState("");
+        const[po,setpo]=useState("");
+        const[type,setType]=useState("");
+        const[hrf,setHrf]=useState("");
+        const[hrfvalue,setHrfvalue]=useState("");
+        const[warningmessage,setWaringmessage]=useState("");
+        const[hrfjson,setHrfjson]=useState("");           
+        const[polabel,setPolabel]=useState("");
+        const[povalue,setPovalue]=useState("");
+
+        const[printstop,setStop]=useState();
+        const[printbt,setPrintbt]=useState(<Loading/>);
+        const[quantity,setQuantity]=useState("")
+        const[testdata,setTestdata]=useState(0)
+        const[printhead,setPrinthead] =useState("Process Start") 
+        
+        const[processbtnstate,setProcessbtnstate]=useState(false)
+                
+        const[processstopbtnstate,setProcessbtnstopstate]=useState(true)
+        const[preparebtnstate,setPreparebtnstate]=useState(true)
+        const[pausebtnstate,setPausebtnstate]=useState(true)
+        const[printbtnstate,setPrintbtnstate]=useState(true) 
+        const[closebtnstate,setClosebtnstate]=useState(true) 
+        const[checkboxvalue,setCheckbox] =useState(false)                            
+        const { operation } = useParams();
+        const { uniqueID } = useParams();
+        const[checkheading,setCheckheading]=useState("Do you Want to start Batch")
+        const[checkstate,setCheckstate]=useState(false) 
+        
+        const[responsefielddata,setResponsefielddata]=useState("")
+        const navigate=useNavigate();
+        let gtinoptions=[]
+        let pooptions=[]
+
+        function getposelectedData(gtinparams){
+            axios
+            .get("http://127.0.0.1:8000/masterapp/productionorder/")
+            .then((res)=>{
+                res.data.map(data =>{
+                    if(data.id==gtinparams){
+                        setPolabel(data.process_order_number );
+                        setPovalue(data.id);
+                    }        
+                })         
+            })
+        }
+
+        function getPrinterData(){
+            axios.get("http://127.0.0.1:8000/masterapp/printer/"+uniqueID+"/")
+            .then((res)=>{
+                var ser=JSON.parse(res.data[0].numbers) 
+                // alert(ser) // alert(res.data[0].numbers)
+                setHrfjson(res.data[0].hrf)
+                var tablejsonvalue = JSON.parse(res.data[0].hrf);
+                setProcessOrderNumber(res.data[0].processordernumber)
+                getposelectedData(res.data[0].processordernumber)
+                setGtin(res.data[0].gtin);
+                setExp(res.data[0]. expiration_date);
+                setLot(res.data[0].lot);
+                setType(res.data[0].type)
+                setHrf(tablejsonvalue.hrf1);
+                setHrfvalue(tablejsonvalue.hrf1value);
+                setNumbers(ser)
+              
+
+                            
+            })
+        }
+        const getpolabeloption=event =>{
+
+        }
+
+        function getResponseData(){
+            axios.get("http://127.0.0.1:8000/masterapp/printer/"+uniqueID+"/")
+            .then((res)=>{
+            //  alert(res.data[0].responsefield) 
+            //  alert(res.data[0].preparebuttonresponse)
+                if(res.data[0].responsefield==true)
+                {
+                    setProcessbtnstate(true)
+                    setPreparebtnstate(false)
+                    // setPrintbtnstate(false);
+                    setProcessbtnstopstate(false);
+                    // setClosebtnstate(false)
+
+                }
+                else{
+                    setProcessbtnstate(false)
+                    setPreparebtnstate(true)
+                    // setPrintbtnstate(true);
+                    setProcessbtnstopstate(true);
+                    // setClosebtnstate(true)
+                    // setPausebtnstate(true)
+                }
+
+                            
+            })
+        }
+
+        function getPrepareResponseData(){
+            axios.get("http://127.0.0.1:8000/masterapp/printer/"+uniqueID+"/")
+            .then((res)=>{
+                // alert(res.data[0].preparebuttonresponse)
+                if(res.data[0].preparebuttonresponse==true)
+                {
+                    setPrintbtnstate(false)
+                    setPreparebtnstate(true)
+                    // setClosebtnstate(false)
+
+                }
+                else{
+                    setPrintbtnstate(true)
+                    // setPreparebtnstate(false)
+                }
+
+                            
+            })
+        }
+        function getStopResponseData() {
+            axios.get("http://127.0.0.1:8000/masterapp/printer/"+uniqueID+"/")
+            .then((res)=>{
+                // alert(res.data[0].pause_stop_btnresponse)
+                if(res.data[0].stopbtnresponse==true )
+                {
+                    setClosebtnstate(false)
+                    setProcessbtnstopstate(true)
+                    setPrintbtnstate(true)
+                    
+                    // setClosebtnstate(false)
+
+                }
+                
+                else{
+                    setClosebtnstate(true)
+                    // setProcessbtnstopstate(false)
+                    // setPrintbtnstate(false)
+                    // setPreparebtnstate(false)
+                }
+                if(res.data[0].pause_stop_btnresponse==true )
+                {
+                    setPausebtnstate(true)
+                    
+                    // setClosebtnstate(false)
+
+                }
+                            
+            })
+        }
+
+
+        function getPrintResponseData() {
+             axios.get("http://127.0.0.1:8000/masterapp/printer/"+uniqueID+"/")
+            .then((res)=>{
+                // alert(res.data[0].preparebuttonresponse)
+                if(res.data[0].pause_stop_btnresponse==true)
+                {
+                    setPausebtnstate(false)
+                    setPrintbtnstate(true)
+                    // setClosebtnstate(false)
+
+                }
+                else{
+                    setPausebtnstate(true)
+                    // setPrintbtnstate(false)
+                    // setProcessbtnstopstate(false)
+                    // setPrintbtnstate(false)
+                    // setPreparebtnstate(false)
+                }
+
+                            
+            })
+        }
+
+
+        function getPauseResponseData() {
+            axios.get("http://127.0.0.1:8000/masterapp/printer/"+uniqueID+"/")
+            .then((res)=>{
+                // alert(res.data[0].preparebuttonresponse)
+                if(res.data[0].pause_stop_btnresponse==false)
+                {
+                    setPausebtnstate(true)
+                    //setPrintbtnstate(false)
+                    // setClosebtnstate(false)
+
+                }
+                else{
+                    setPausebtnstate(false)
+                    //setPrintbtnstate(false)
+                    // setProcessbtnstopstate(false)
+                    // setPrintbtnstate(false)
+                    // setPreparebtnstate(false)
+                }
+
+                            
+            })
+        }
+
+
+        function  getreturnslnoResponseData() {
+            axios.get("http://127.0.0.1:8000/masterapp/printer/"+uniqueID+"/")
+            .then((res)=>{
+                // alert(res.data[0].return_slno_btn_response)
+                if(res.data[0].return_slno_btn_response==true)
+                {
+                    setClosebtnstate(true)
+                    //setPrintbtnstate(false)
+                    // setClosebtnstate(false)
+
+                }
+                // else{
+                //    // setClosebtnstate(false)
+                //     //setPrintbtnstate(false)
+                //     // setProcessbtnstopstate(false)
+                //     // setPrintbtnstate(false)
+                //     // setPreparebtnstate(false)
+                // }
+
+                            
+            })
+        }
+
+
+       
+
+ 
+        useEffect(() => {
+            if(operation == 'edit') {
+                getPrinterData();
+                getResponseData()
+             
+                getPrepareResponseData() 
+                getStopResponseData() 
+                getPrintResponseData()
+                getPauseResponseData()
+                getreturnslnoResponseData()
+
+            }
+         //   getPrepareResponseData() 
+            
+            
+                 
+        }, []); 
+        
+        // useInterval(() => {
+        //     setStop(printstop + 1);
+        //   }, 1000);
+                
+        var powidget=<input
+                        type="text"
+                        className="form-control"
+                        value={polabel}
+                        readOnly={true}
+                        onChange={(e) => setProcessOrderNumber(e.target.value)}
+                    />
+        var expwidget=  <input
+                            type="text"
+                            className="form-control"
+                            value={expiration_date}
+                            readOnly={true}
+                            onChange={(e) => setExp(e.target.value)}
+                        />
+        var lotwidget=  <input
+                            type="text"
+                            className="form-control"
+                            value={lot}
+                            readOnly={true}
+                            onChange={(e) => setLot(e.target.value)}
+                        />
+        var typewidget = <input 
+                            type="text"
+                            className="form-control"
+                            value={type}
+                            onChange={(e) => setType(e.target.value)}
+                        />
+
+//var gtinwidget=<Select className="s" options={gtin} onChange={gtindata}/>
+        var gtinwidget=  <input
+                            type="text"
+                            className="form-control"
+                            value={gtin}
+                            readOnly={true}
+                            onChange={(e) => setGtin(e.target.value)}
+        
+                        />
+        var serialnowidget = <input 
+                                type="text"
+                                className="form-control"
+                                value={numbers}
+                                onChange={(e) => setNumbers(e.target.value)}
+                            />        
+        var hrfwidget = <input 
+                            type="text"
+                            className="form-control"
+                            value={hrf}
+                            onChange={(e) => setHrf(e.target.value)}
+                        />  
+                    
+        var hrfvaluewidget = <input 
+                                type="text"
+                                className="form-control"
+                                value={hrfvalue}
+                                onChange={(e) => setHrfvalue(e.target.value)}
+                            /> 
+
+        var quantitywidget = <input 
+                            type="text"
+                            className="form-control"
+                            value={quantity}
+                            onChange={(e) => setQuantity(e.target.value)}
+                        /> 
+                       
+                                    
+        //                 const handleOk=(e)=>{
+        //                     setProcessbtnstate(false)
+        //                     setCheckheading("Do You Want To Close The Batch")
+        //                     setCheckstate(true)
+        //                     // axios
+        //                     // .put(`http://127.0.0.1:8000/masterapp/checkbox/update/${uniqueID}/`, 
+                            
+        //                     // {
+                                
+        //                     //     "responsefield":checkboxvalue,
+        //                     //     "gtin":gtin,  
+        //                     // })
+                            
+        //                     // .then((res2) => {
+        //                     //     // alert("2255")
+        //                     //     alert(res2.data.gtin)
+        //                     //     axios
+        //                     //     .get("http://127.0.0.1:8000/masterapp/checkboxindividual/"+res2.data.gtin+"/",
+                               
+        //                     //     )
+        //                     //     .then((res5)=>{
+        //                     //         // alert(res5.data[0].responsefield)
+        //                     //         if(res5.data[0].responsefield==true)
+        //                     //         {
+        //                     //                     alert("haiii")
+        //                     //                     setCheckheading("Do You Want To Close The Batch")
+        //                     //                     // setProcessbtnstate(false)
+        //                     //                  }
+        //                     //         else{
+        //                     //             setCheckheading("Do You Want To Start The Batch")
+        //                     //             // setProcessbtnstate(true)
+        //                     //         }
+        //                     //     })
+
+                            
+        //                     // })  
+                           
+                        
+
+        //                 }
+        // const handleChange=(event)=>{
+        // //                     alert(event.target.checked)
+                           
+
+        //                     setCheckbox(event.target.checked);
+                           
+        //                 //    if(event.target.checked==true)
+        //                 //    {
+        //                 //     setProcessbtnstate(false)
+                           
+
+        //                 //    }
+        //                 //    else{
+        //                 //     setProcessbtnstate(true)
+        //                 //    }
+                        
+        //                     }                            
+                            
+                        
+        const handlePrepare=(e)=>{
+            setPreparebtnstate(true)
+            setPrintbtnstate(false)
+
+            e.preventDefault(); 
+            axios
+            .post("http://127.0.0.1:8000/masterapp/printerprepare/",
+            
+            {
+                "id":uniqueID,
+                "gtin":gtin,
+                "preparebuttonresponse":true, 
+             
+            })
+            
+            .then((res2) => {
+
+             
+            //  alert(res2.data.preparebuttonresponse)
+            //     if(res2.data.preparebuttonresponse==true)
+            //     {
+            //        setPrintbtnstate(false)
+                   
+            //     }
+            //     else{
+                  
+            //         setPrintbtnstate(true)
+            //     }
+                
+            })
+
+        }
+                          
+                            const handleStop=(e)=>{
+                                window.location.reload(false)
+                                setPrintbtnstate(false)
+                                setPausebtnstate(true)
+                                e.preventDefault(); 
+                                axios
+                                .post("http://127.0.0.1:8000/masterapp/printerstop/",
+                                
+                                {   "id":uniqueID,
+                                    "breakloop":0, 
+                                    "type":type, 
+                                    "start_pause_btnresponse":false,
+                                    "pause_stop_btnresponse":false,
+                                    "gtin":gtin,
+                                })
+                                
+                                .then((res2) => {
+                                //  alert(res2.data)
+                                //     if(res2.data===200)
+                                //     {
+                                    // window.location.reload(false)
+                                       
+                                //        setStop("stoped")
+                                //     }
+                                //     else{
+                                //         setStop("")
+                                      
+                                //     }
+                                    
+                                })
+
+                            }
+                            const handleStart=(e)=>{
+                                e.preventDefault(); 
+                                setPausebtnstate(false)
+                                setPrintbtnstate(true)
+                                axios
+                                .post("http://127.0.0.1:8000/masterapp/printerstart/",
+                                
+                                {
+                                    "id":uniqueID,
+                                    "lot":lot,
+                                    "gtin":gtin,
+                                    "expiration_date" :expiration_date,
+                                    "numbers":numbers ,
+                                    "tetdata":testdata,
+                                    "printstop":5,
+                                    "type":type,
+                                    "hrf":hrfjson,
+                                    "breakloop":6,
+                                    "preparebuttonresponse":true,
+                                    "start_pause_btnresponse":true,
+                                    "pause_stop_btnresponse":true,
+
+                                  
+
+                                })
+                                
+                                .then((res2) => {
+                                //  alert(res2.data)
+
+                                    if(res2.data===200)
+                                    {
+                                
+                                        
+                                       
+                                    }
+                                    else{
+                                        setPrintbt(<Loading/>)
+                                      
+                                    }
+                                    
+                                })
+
+                            }
+
+                            const handleEnd=(e)=>{
+                              
+                            
+                                setClosebtnstate(true)
+                                // window.location.reload(true)
+                                e.preventDefault(); 
+                                axios
+                                .post("http://127.0.0.1:8000/masterapp/loopstop/",
+                                
+                                {
+                                    "id":uniqueID,
+                                    
+                                    "gtin":gtin,
+                                   
+                                    "numbers":numbers ,
+                                    "return_slno_btn_response":true
+                                })
+                                
+                                .then((res2) => {
+                                //  alert(res2.data)
+                                //     if(res2.data===200)
+                                //     {
+                                       
+                                //        setStop("stoped")
+                                //     }
+                                //     else{
+                                //         setStop("")
+                                      
+                                //     }
+                                    
+                                })
+
+                              
+                          
+
+                            }                       
+
+    const handleSubmit=(e)=>{
+        
+        setProcessbtnstate(true);
+        setPreparebtnstate(false);
+        setProcessbtnstopstate(false);
+        e.preventDefault();
+        setTestdata(testdata+1)
+        if(testdata==0){
+            setPrinthead("Process Stop")
+        // setProcessbtnstate(true)
+
+        }
+        else{
+            setPrinthead("Process Stop") 
+    //    setClosebtnstate(false)
+    //    setPrintbtnstate(true);
+    //    setPausebtnstate(true)
+        }
+
+        axios
+        .get("http://127.0.0.1:8000/masterapp/printer/")
+     
+        // setStop(printstop + 1);
+        // if(printstop==0)
+        // {
+        //     //setStop(0)
+        //     setPrinthead("Pause")
+        // }
+        // else if(printstop==1)
+        // {
+        //    // setStop(1)
+        //     setPrinthead("Print")
+        // }
+        //alert(po)
+
+   
+        if(operation === 'edit') {
+                // alert(printstop)
+            axios
+            .post("http://127.0.0.1:8000/masterapp/clientcommunication/",
+            
+            {
+                //"processordernumber":po,
+                "id":uniqueID,
+                "lot":lot,
+                "gtin":gtin,
+                "expiration_date" :expiration_date,
+                "numbers":numbers ,
+                "tetdata":testdata,
+                "printstop":quantity,
+                "type":type,
+                "hrf":hrfjson,
+                "responsefield":true,
+                "preparebuttonresponse":false,
+                "stopbtnresponse":false,
+                "start_pause_btnresponse":false,
+                "pause_stop_btnresponse":false,
+                "breakloop":6,
+                "return_slno_btn_response":false
+                //"type" :type 
+            })
+           
+
+            
+            .then((res2) => {
+                alert(res2.data)
+
+
+                if(res2.data ===200){   
+                    // setProcessbtnstate(true); 
+                    axios
+                    .post(`http://127.0.0.1:8000/masterapp/printer/`,
+                    {
+                        "gtin":gtin,
+                    })
+                    .then((res)=>{
+                //alert("haii")
+                    })
+           
+            //   else{
+            //     alert("not")
+            //   }
+                
+            //         navigate("/productionorder");
+                 
+            //     });
+                }
+            })
+
+           
+        } 
+       
+    }  
+
+
+    const ProcessStopBtn=(e)=>{
+        window.location.reload(false)
+        setPrintbtnstate(true);
+        // setPausebtnstate(true);
+        e.preventDefault();
+        setProcessbtnstopstate(true);
+        setClosebtnstate(false)
+        setPausebtnstate(true)
+        setTestdata(testdata+1)
+        if(testdata==0){
+            setPrinthead("Process Stop")
+        // setProcessbtnstate(true)
+
+        }
+        else{
+            setPrinthead("Process Stop") 
+           // setProcessbtnstopstate(false);
+    
+    //    setPausebtnstate(true)
+        }
+     
+        // setStop(printstop + 1);
+        // if(printstop==0)
+        // {
+        //     //setStop(0)
+        //     setPrinthead("Pause")
+        // }
+        // else if(printstop==1)
+        // {
+        //    // setStop(1)
+        //     setPrinthead("Print")
+        // }
+        //alert(po)
+        if(operation === 'edit') {
+                // alert(printstop)
+            axios
+            .post("http://127.0.0.1:8000/masterapp/clientcommunication/",
+            
+            {
+                //"processordernumber":po,
+                "id":uniqueID,
+                "lot":lot,
+                "gtin":gtin,
+                "expiration_date" :expiration_date,
+                "numbers":numbers ,
+                "tetdata":testdata,
+                "printstop":quantity,
+                "type":type,
+                "hrf":hrfjson,
+                "preparebuttonresponse":false,
+                "responsefield":true,
+               "stopbtnresponse":true,
+               "start_pause_btnresponse":true,
+               "pause_stop_btnresponse":false,
+                "return_slno_btn_response":false,
+                "breakloop":6,
+                //"type" :type 
+            })
+           
+
+            
+            .then((res2) => {
+                // alert(res2.data)
+                window.location.reload(false)
+                if(res2.data ===200){   
+                    // setProcessbtnstate(true); 
+                    axios
+                    .post(`http://127.0.0.1:8000/masterapp/printer/`,
+                    {
+                        "gtin":gtin,
+                    })
+                    .then((res)=>{
+                // alert("haii")
+                    })
+           
+            //   else{
+            //     alert("not")
+            //   }
+                
+            //         navigate("/productionorder");
+                 
+            //     });
+                }
+            })
+
+           
+        } 
+    }  
+        
+
+    return (
+        <div>
+            <Navebar/>
+            <br></br>
+            <br></br>
+          
+            <div className="container" id="printerviewpage" >
+            <br></br>
+            <div className="row">
+                                            <div className="col-2">
+
+                                            </div>
+                                            
+                                            <div className="col-8">
+                                            <button
+                                                        // type="submit"
+                                                className="btn btn-primary"
+                                                onClick={handleSubmit}
+                                                disabled={processbtnstate} 
+                                            >
+                                                Load Batch
+
+                                            </button>  &nbsp;  
+                                      
+                                            <button
+                                                    // type="submit"
+                                                className="btn btn-info"
+                                                onClick={handlePrepare} 
+                                                disabled={preparebtnstate}>
+                                                    Prepare Printer&Scanner
+                                            </button>                                 
+                                 
+                                        &nbsp;&nbsp;
+                                         
+                                        <button  
+                                                className="btn btn-danger"
+                                                onClick={ProcessStopBtn}
+                                                disabled={processstopbtnstate} 
+                                            >
+                                            Stop Batch
+
+                                            </button>  &nbsp;
+                           
+                                    
+                                            </div>
+                                            <div className="col-2">
+                                                
+                                            </div>
+                                       
+                                        </div> 
+                <div className="row">
+                    <br></br>
+                    <br></br>
+                    {warningmessage}        
+                    <br></br>
+                    <br></br>  
+                    <div className="col-2"></div>
+                    <div className="col-8">
+                            <table>
+                                <br></br>
+                                <tbody> 
+                                    <tr>
+                                        <td class="productionOrderReportSearchTD">Gtin</td>
+                                        <td class="productionOrderReportSearchTD">
+                                            {gtinwidget}
+                                        </td>
+                                        &nbsp;&nbsp;&nbsp;
+                                  
+                                    </tr>
+                                    <br></br>
+                                    <tr>
+                                        <td class="productionOrderReportSearchTD">Productionnumber</td>
+                                        <td class="productionOrderReportSearchTD">
+                                                                           
+                                            {powidget}
+                                        </td>
+                                        &nbsp;&nbsp;&nbsp;
+                                     
+                                    
+                                    </tr>
+                                    <br></br>
+                                    <tr>
+                                        <td class="productionOrderReportSearchTD">Expiry Date</td>
+                                        <td class="productionOrderReportSearchTD">
+                                            {expwidget}
+                                        </td>
+                                        &nbsp;&nbsp;&nbsp;
+                                      
+                                    </tr>
+                                    <br></br>
+                                    <tr>
+                                        <td class="productionOrderReportSearchTD">Lot</td>
+                                        <td class="productionOrderReportSearchTD">
+                                            {lotwidget}
+                                        </td>
+                                    </tr>
+                                    <br></br>
+                                    <tr>
+                                        <td class="productionOrderReportSearchTD">Printing Type</td>
+                                        <td class="productionOrderReportSearchTD">
+                                            {typewidget}
+                                        </td>
+                                    </tr>
+                                    <br></br>
+                                    <tr>
+                                        <td class="productionOrderReportSearchTD">SerialNumbers</td>
+                                        <td class="productionOrderReportSearchTD">
+                                            {serialnowidget}
+                                        </td>
+                                    </tr>
+                                    <br></br>
+                                    <tr>
+                                        <td class="productionOrderReportSearchTD">HRF</td>
+                                        <td class="productionOrderReportSearchTD">
+                                                {hrfwidget}
+                                        </td>
+                                        <td class="productionOrderReportSearchTD">HRFValue</td>
+                                        <td class="productionOrderReportSearchTD">
+                                                {hrfvaluewidget}
+                                        </td>
+                                    </tr>
+                                    <br></br>
+                                    <tr>
+                                        <td class="productionOrderReportSearchTD">Quantity you want to Stop</td>
+                                        <td class="productionOrderReportSearchTD">
+                                            {quantitywidget}
+                                        </td>
+                                    </tr>                        
+                                    <br></br>                                   
+                                </tbody>
+                            </table> 
+                        </div>
+                        <div className="col-2">
+                        </div>
+                    </div>
+                    <div className="row">
+                                            <div className="col-2">
+
+                                            </div>
+                                            <div className="col-8">
+                                            <button
+                                                // type="submit"
+                                            className="btn btn-success"
+                                            onClick={handleStart}
+                                            disabled={printbtnstate} >
+                                                Start Printing 
+                                        </button> &nbsp;  
+                                      
+                                        <button
+                                                // type="submit"
+                                            className="btn btn-info"
+                                            onClick={handleStop} 
+                                            disabled={pausebtnstate}>
+                                                Pause Printing
+                                        </button>
+                                        &nbsp;&nbsp;
+                                         
+                                        <button
+                                                // type="submit"
+                                            className="btn btn-danger"
+                                            
+                                            onClick={handleEnd} 
+                                            
+                                            disabled={closebtnstate} >
+                                            Return Serial Numbers
+                                        </button>  &nbsp;
+                           
+                                    
+                                            </div>
+                                            <div className="col-2">
+                                                
+                                            </div>
+                                       
+                                        </div> 
+                </div>   
+        </div>
+    )
+}
+
+export default PrinterView
+
+PRINTER-DATAGRI
+
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from "react-router";
+import * as  MdIcons from "react-icons/md";
+import { Box,useTheme  } from "@mui/material";
+
+import { tokens } from '../../../theme';
+import { DataGrid, GridToolbar, GridApi, GridCellValue, GridToolbarContainer, GridToolbarColumnsButton, 
+  GridToolbarFilterButton, GridToolbarDensitySelector, GridToolbarExport } from '@material-ui/data-grid';
+import axios from "axios";
+// import Sidebar from '../../../components/Sidnav/Sidebar';
+import { RiInsertRowTop } from 'react-icons/ri';
+import {MdPreview} from 'react-icons/md'
+import Navebar from '../../Navigation/Navebar';
+
+function PrinterDataGrid(props) {
+
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
+  const [data, setData] = useState([]);
+  const [tabledark, setTableDark] = useState("");
+                    
+  const [userDataRows, setUserDataRows] = useState([]);
+  const[viewbtnmode,setViewBtnmode]=useState("")
+  const[viewbtntext,setViewBtntext]=useState("")
+                
+  ///   For navigate function
+  const navigate = useNavigate();
+                    
+  function logout() {
+    window.localStorage.removeItem("username");
+    window.localStorage.removeItem("password");                
+    navigate("/account/login");
+  }
+                    
+  var username = window.localStorage.getItem('loggedInUsername')
+  var password = window.localStorage.getItem('loggedInUserPassword')
+  var currentUserrole = window.localStorage.getItem('loggedInUserrole')
+  //alert(window.localStorage.getItem('password'));
+  var index=1;
+  let userDataColumns =[
+                      {field:'id',headerName:'Id',width:100,headerClassName: "MuiDataGrid-columnHeaders",},
+                      {field:'processordernumber',headerName:'Processordernumber',width:300,headerClassName: "MuiDataGrid-columnHeaders",},
+                      {field:'gtin',headerName:'Gtin',width:200,headerClassName: "MuiDataGrid-columnHeaders",},
+                      {field:'expiration_date',headerName:'Expiration_date',width:200,headerClassName: "MuiDataGrid-columnHeaders",},
+                      {field:'lot',headerName:' Lot',width:160,headerClassName: "MuiDataGrid-columnHeaders",},
+                      {field:'type',headerName:'Printing Type',width:160,headerClassName: "MuiDataGrid-columnHeaders",},
+                      {field:'status',headerName:'Status',width:160,headerClassName: "MuiDataGrid-columnHeaders",}, 
+                    {
+                        field: 'edit',
+                        headerName: 'View',
+                        width:300,
+                        headerClassName: "MuiDataGrid-columnHeaders",
+                        sortable: false,
+                        renderCell: (params) => {
+                          const onClick = (e) => {
+                            e.stopPropagation(); // don't select this row after clicking
+                    
+                            const api: GridApi = params.api;
+                            const thisRow: Record<string, GridCellValue> = {};
+                    
+                            api
+                              .getAllColumns()
+                              .filter((c) => c.field !== '__check__' && !!c)
+                              .forEach(
+                                (c) => (thisRow[c.field] = params.getValue(params.id, c.field)),
+                              );
+                            //alert(thisRow.name);
+                            // window.localStorage.setItem("shippoEditID",thisRow.id);
+                 
+                            navigate("/printerpool/edit/"+ thisRow.id)
+                    
+                            // setToLocalStorage(
+                            //   thisRow.id,
+                            //   thisRow.shipping_order_name,
+                            //   thisRow.source_location,
+                            //   thisRow.destination_location,
+                            //   thisRow.created_by,
+                            //   thisRow.subject_name,
+                            //   thisRow.shipping_date,
+                            //   thisRow.batch_for_export
+                            // );
+                    
+                            //return alert(JSON.stringify(thisRow, null, 4));
+                          };
+                    
+                          const api2: GridApi = params.api;
+                                const thisRow2: Record<string, GridCellValue> = {};
+  
+                                api2
+                                  .getAllColumns()
+                                  .filter((c) => c.field !== '__check__' && !!c)
+                                  .forEach(
+                                    (c) => (thisRow2[c.field] = params.getValue(params.id, c.field)),
+                                  );
+  
+                              //alert(currentUserrole);
+                              // alert(thisRow2.status)
+                              if(thisRow2.status === "Printed" ) {
+                                return <button
+                                  className="btn btn-success" 
+                                  disabled = "true"
+                                  // disabled = {viewbtnmode}
+                                  onClick={onClick}><MdPreview size={23}/></button>;
+                              }
+                              else if(thisRow2.status === "Not Print") {
+                                return <button
+                                  className="btn btn-success" 
+                                 
+                                  onClick={onClick}><MdPreview size={23}/></button>;
+                              }
+                                },
+                    },
+  
+                 
+                  ]
+                  //.get(window.url+"/master/productionorder/"+rowData.processordernumber,
+  
+                function createRows(rowDatas){
+  
+                    rowDatas.map(rowData =>{                
+                    axios            
+                    .get("http://127.0.0.1:8000/masterapp/productionorder/"+rowData.processordernumber
+                    )       
+                    .then((res2) => {       
+                      setUserDataRows(userDataRows =>[
+                        ...userDataRows,
+                        {
+                          'id':rowData.id,
+                          // 'processordernumber':rowData.processordernumber,
+                        'processordernumber':res2.data[0].process_order_number,
+                          'gtin':rowData.gtin,
+                          'expiration_date':rowData.expiration_date,
+                          'lot':rowData.lot,
+                          'type':rowData.type,
+                          "status":rowData.status,
+                    
+                          // 'hrf':rowData.hrf,
+                          }
+                          // if(rowData.status=="Printed")
+                          // {
+                          // setViewBtnmode(false)
+                          // }
+                        ])                    
+                      })
+              
+                    })
+                                
+                  }
+//         function createRows(rowDatas) {
+//           //  alert("anu")
+//             // alert(rowDatas.length);
+        
+//             let editButton = <button></button>;  
+        
+//             rowDatas.map(rowData => {
+//               //alert(rowData.id);
+//               setUserDataRows( userDataRows => [
+//                 ...userDataRows,
+//                 {'id':rowData.id,
+//                 // 'processordernumber':rowData.processordernumber,
+// 'processordernumber':rowData.processordernumber,
+// 'gtin':rowData.gtin,
+// 'expiration_date':rowData.expiration_date,
+// 'lot':rowData.lot,
+// 'type':rowData.type,},
+//               ]);
+        
+//             })
+//           }
+
+  
+        function getData() {
+                        axios
+                        .get("http://127.0.0.1:8000/masterapp/printerip/",
+                        )
+
+                        .then((res) => {
+                          // alert(res.data);
+                        axios
+                        .get("http://127.0.0.1:8000/masterapp/printerip/"+res.data+"/",
+                        )
+                        .then((res1) => {
+                        // alert(res1.data);
+                          setData(res1.data);
+                          createRows(res1.data);
+                        });
+                      })
+                        //alert("anu");
+                        
+                  }
+                          
+            useEffect(() => {
+                    // alert(window.localStorage.getItem('loggedInUsername'))
+                    //console.log('i fire once');
+                    // if(window.localStorage.getItem('loggedInUsername') && window.localStorage.getItem('loggedInUserPassword')) {
+                  getData();
+           
+                 
+                    //  }
+                    //  else{
+                    //   navigate("/");
+                    //  }
+                    //alert("anu");
+                   
+
+            }, []);
+              function handleDelete(id) {
+                  axios
+                    .delete(window.url+`/master/printer/delete/${id}`,
+                    {
+                                      // auth: {
+                                      //   username: username,
+                                      //   password: password
+                                      // }
+                    }
+                    )
+                    .then(() => {
+                      getData();
+                    });
+                  }
+                              
+          function CustomToolbar() {
+                    return (
+                            <GridToolbarContainer>
+                              <GridToolbarColumnsButton />
+                              <GridToolbarFilterButton />
+                              <GridToolbarDensitySelector />
+                              <GridToolbarExport />
+                            </GridToolbarContainer>
+                          );
+                  }  
+    return (
+      <>
+      <Navebar/>    
+       
+      
+         
+      <div class="card-body">  
+          <Box sx={{ display: 'flex' }}> 
+            {/* <Sidebar/> */}
+              <Box component="main" sx={{ flexGrow: 3, p: 7 }}>
+                <div className="customer">
+                  <div  style={{ height: 400, width: '100%'}}>
+                    <h5>PrinterTable</h5>     
+                          {/* <DataGrid rows={userDataRows} columns={userDataColumns} pageSize={10} components={{ Toolbar: CustomToolbar }}/> */}
+                    <Box m="20px">
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+      {/* <Header  subtitle="welcome to you Contacts" /> */}
+                      </Box>
+   
+                      <Box
+                        m="8px 0 0 0"
+                        width="100%"
+                        height="80vh"
+                        sx={{
+                          "& .MuiDataGrid-root": {
+                            border: "none",
+                          },
+                          "& .MuiDataGrid-cell": {
+                            borderBottom: "none",
+                          },
+                          "& .name-column--cell": {
+                            color: colors.greenAccent[300],
+                          },
+                        
+                          "& .MuiDataGrid-columnHeaders": {
+                            backgroundColor: colors.greenAccent[700],
+                            borderBottom: "none",
+                          },
+                          "& .MuiDataGrid-virtualScroller": {
+                            backgroundColor: colors.primary[400],
+                          },
+                          "& .MuiDataGrid-footerContainer": {
+                            borderTop: "none",
+                            backgroundColor: colors.greenAccent[700],
+                          },
+                          "& .MuiCheckbox-root": {
+                            color: `${colors.greenAccent[200]} !important`,
+                          },
+                          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+                            color: `${colors.grey[100]} !important`,
+                          },
+                        }}
+                      >
+                      <DataGrid
+                          rows={userDataRows}
+                          columns={userDataColumns}
+                          components={{ Toolbar: GridToolbar}}
+                      />
+                    </Box>
+                  </Box>
+                </div> 
+              </div>         
+            </Box>
+          </Box>
+        </div>                     
+      </>
+  )
+}
+
+export default PrinterDataGrid
+/////////////////////////////////////////////////////
+PROJECT-BACKEND-VIEW
+from django.shortcuts import render
+from masterapp .models import PrinterdataTable,ProductionOrder,ScannerTable,ShipPO,Customers,Locations
+from masterapp.serializers import PrinterSerializer,ProductionOrderSerializer,ScannerSerializer,LoopStopSerializer,ShipPOSerializer,CustomersSerializer,LocationSerializer
+from  rest_framework .views import APIView
+from rest_framework .response import Response
+import socket
+import json
+from urllib.request import urlopen
+import re as r
+import threading
+from django.http import HttpResponse
+import itertools
+from channels.generic.websocket import AsyncWebsocketConsumer
+# import threading
+import time
+# import sys
+# import os
+import requests
+# import requests
+# Create your views here.
+# from multiprocessing import Process
+class ProductionOrderView(APIView):
+    def get(self, request):
+        detailsObj =ProductionOrder.objects.all().order_by('id').reverse()
+        serializeObj = ProductionOrderSerializer(detailsObj, many = True)
+        return Response(serializeObj.data)
+ 
+class ProductionOrderViewIndividual(APIView):
+    def get(self, request, id):
+       detailsObj = ProductionOrder.objects.all().filter(id=id)
+       serializeObj = ProductionOrderSerializer(detailsObj, many=True)
+       return Response(serializeObj.data)
+# ...............................................................................
+class ShippoAuditReportdate(APIView):  
+    def get(self, request):
+        detailsObj = ShipPO.objects.all()
+        serializeObj =ShipPOSerializer(detailsObj, many=True)
+        # fromDate = request.data["datefrom"]
+        # toDate = request.data["dateto"]
+        # response  = ProductionReport.objects.filter( production_date=fromDate, production_date__lte=toDate)
+        return Response(200)
+    
+    def post(self, request):
+        serializeObj = ShipPOSerializer(data=request.data)
+        v=[]
+        startdate = request.data["datefrom"]
+        
+        toDate = request.data["dateto"]
+        # fromDate=str(request.POST.get('datefrom'))
+        # toDate=str(request.POST.get("dateto"))
+        # response  =ProductionReport.objects.all().filter(production_date=id)
+        
+        response  =ShipPO.objects.all().filter(shipping_date__range=(startdate, toDate))
+        serializeObj = ShipPOSerializer(response , many=True)
+        return Response(serializeObj.data) 
+ 
+class ShippoProductionordernumberGetingIndividual(APIView):
+       def get(self,request,id):
+         detailsObj=ShipPO.objects.all().filter(process_no_original=id)
+         serializeObj=ShipPOSerializer(detailsObj,many=True)
+         return Response(serializeObj.data)             
+class ShipPOViewget(APIView):
+       def get(self, request):
+         detailsObj =ShipPO.objects.all()
+         serializeObj = ShipPOSerializer(detailsObj, many = True)
+         return Response(serializeObj.data)  
+# ........................................................................................
+
+class CustomersView(APIView):
+       def get(self, request):
+         detailsObj = Customers.objects.all().order_by('-id')
+         serializeObj = CustomersSerializer(detailsObj, many = True)
+         return Response(serializeObj.data)
+class CustomerViewIndividual(APIView):
+       def get(self, request, id):
+         detailsObj = Customers.objects.all().filter(id=id)
+         serializeObj = CustomersSerializer(detailsObj, many=True)
+         return Response(serializeObj.data) 
+#   ..........................................................................
+class LocationsView(APIView):
+       def get(self, request):
+         detailsObj = Locations.objects.all().order_by('id')
+         serializeObj = LocationSerializer(detailsObj, many = True)
+         return Response(serializeObj.data)
+#   ................................................................................
+
+
+class printerview(APIView) :
+                           
+                           
+       def get(self,request):
+            detailObj=PrinterdataTable.objects.all().order_by('-id')
+            serializeobj=PrinterSerializer(detailObj,many=True)
+            return Response(serializeobj.data)
+       def post(self,request):
+                            # detailobj= PrinterdataTable.objects.get(id=id)
+                            pobj=PrinterdataTable.objects.get(gtin=request.data["gtin"])
+                            pobj.status="Printed"
+                            pobj.save()
+                            return Response(200)
+       
+     
+# class Printerupdateview(APIView):
+#               def put(self, request, id):
+#                      try:
+#                        detailObj = PrinterdataTable.objects.get(id=id)
+#                      except:
+#                         return Response("Not found in database")
+                     
+#                      serializeObj = PrinterSerializer(detailObj, data=request.data)
+#                      # statusdata=request.data["status"]
+#                      # gtindata=request.data["gtin"]
+#                      # print(statusdata)
+#                      print("haiii")
+#                      if serializeObj.is_valid():
+#                             serializeObj.save()
+#                             detailobj= PrinterdataTable.objects.get(id=id)
+#                             pobj=PrinterdataTable.objects.get(gtin=detailobj.gtin)
+#                             pobj.status="Printed"
+#                             pobj.save()
+#                             # detailobj.status="printed"
+#                             print("haiii")
+#                             # detailobj.save()
+#                             # detailobj= PrinterdataTable.objects.filter(id=gtindata).update(status=statusdata)
+#                             return Response(200)
+#                      # print(detailObj.pk)
+#                      return Response(serializeObj.errors)
+
+class Printerindividualview(APIView):
+       def get(self,request,id):
+                detailobj=PrinterdataTable.objects.all().filter(id=id)
+                serializeobj=PrinterSerializer(detailobj,many=True)
+                return Response(serializeobj.data) 
+
+class Printergtinview(APIView):
+       def get(self,request,id):
+                detailobj=PrinterdataTable.objects.all().filter(id=id)
+                detailobj[0].status="Printed"
+                
+                serializeobj=PrinterSerializer(detailobj,many=True)
+                detailobj[0].save()
+                return Response(serializeobj.data) 
+class Printeripview(APIView):
+       def get(self,request):
+              hostname = socket.gethostname()
+              systemip = socket.gethostbyname(hostname)
+              print(systemip)
+              # print(socket.gethostbyname(systemip))
+              
+              return Response(systemip) 
+class Printeripgetview(APIView):
+       def get(self,request,id):
+                detailobj=PrinterdataTable.objects.all().filter(ip_address=id)
+                serializeobj=PrinterSerializer(detailobj,many=True)
+                return Response(serializeobj.data)          
+         
+
+# class ClientCommunication(APIView):
+#        def get(self,request):
+#                                   # global data7                    
+#               s = socket.socket()
+#               port=34567
+#               s.connect(('192.168.200.150', port))
+       
+#               message= "F0\x04"
+#               s.send(message.encode()) 
+#               data7=s.recv(1024).decode() 
+#               print('Received from server: ' + data7)
+#               return Response(200)                  
+#        def printfun(self,gtin,lot,expire,serialno,printstopdata):
+#               self.gtin=gtin 
+#               self.lot=lot
+#               self.expire=expire
+#               self.serialno=serialno
+#               self.printstop=printstopdata
+             
+#               # v=len(serialno)
+           
+#               s = socket.socket()
+#               port=34567
+#               s.connect(('192.168.200.150', port))
+#               # gtinarray=["676878","8967868"]
+#               # slnoarray=["","33333","444444","555555","4545545","222222"]
+            
+#               message= "L,schnell.lbl\x04"
+#               s.send(message.encode()) 
+#               data=s.recv(1024).decode()  
+#               message1= "E\x04"        
+#               s.send(message1.encode()) 
+#               data1=s.recv(1024).decode()  
+              
+                                  
+                               
+#               for sn in serialno:
+                      
+                     
+                     
+#                             message5= "QAH\x09Datamatrix\x09gtin\x09gtinvalue\x09"+ "lot\x09" +"lotvalue\x09"+"exp\x09"+"expvalue\x09"+"serialno\x09"+"serialvalue\x04"
+#                             s.send(message5.encode()) 
+#                             data5=s.recv(1024).decode()
+#                             # print(slno)                    
+#                             # message6= "QAC\x09" + "55555777779(10)45612(21)\x09GTIN\x09" + gtin+"\x09"+ "lot\x09" + lot +"\x09" +"exp\x09" + expire+"\x09"+"serialno\x09"+sn+"\x04"
+#                             message6= "QAC\x09" + "(17)" + expire + "(10)" + lot + "(01)" +  gtin + "(21)" + sn +  "\x09" + "Exp\x09" + expire + "\x09Lot" + "\x09" + lot + "\x09" + "GTIN\x09" +  gtin + "\x09Slno" + "\x09" + sn + "\x04"
+#                             s.send(message6.encode()) 
+#                             data6=s.recv(1024).decode() 
+                                   
+#                             message4= "F2\x04"
+#                             s.send(message4.encode()) 
+#                             data4=s.recv(1024).decode()
+#                             # print(sn)
+#                             # serialno.remove(sn)
+                            
+                             
+#               # print(serialno)
+#               print('Received from server: ' + data5)
+#               print('Received from server: ' + data6)         
+#               print('Received from server: ' + data4)
+#               # time.sleep(6.5)
+#               return Response(200)
+       
+#        def post(self,request):  
+#               global data,v,h;     
+#               gtin=request.data["gtin"]
+#               lot=request.data["lot"]
+#               expire=request.data["expiration_date"]
+#               id=request.data["id"]
+#               serialno=[]
+#               serialno=request.data["numbers"]
+#               printstopdata=request.data["printstop"]
+#               loopbreak=request.data["breakloop"]
+#               u=4
+#               # print(id)
+#               # quantity=request.data["quantity"]
+#               self.printfun(gtin,lot,expire,serialno,printstopdata)
+#               # if u== 4:
+#               # detailobj= PrinterdataTable.objects.all()
+#               detailsObj = PrinterdataTable.objects.get(id=id)
+#         # print(detailsObj.product_conn)
+#               prodObj=PrinterdataTable.objects.get(gtin=detailsObj.gtin)
+#               print(prodObj.gtin)
+              
+#               s = socket.socket()
+#               port=2001
+#               s.connect(('192.168.200.134', port)) 
+#               t=len(serialno)
+#               print(t)
+#               f=True
+#               counter=1
+#               h=[]
+#               # m=0
+             
+#               # while True:                          
+#               for i in range(t):            
+#                      data=s.recv(1024).decode()                                         
+#                      v=data[0]
+#                      confidence=data[1]
+#                      print(confidence)
+#                      meanconfidence=data[2:7]
+#                      h.append(serialno[counter])
+                     
+#                      if(v=="4" and confidence=="1" and meanconfidence>="0.800"):
+#                             grade="A"
+#                      elif(v=="3" and confidence=="1" and meanconfidence>="0.800"):
+#                              grade="B"
+#                      elif (v=="2" and confidence=="1" and meanconfidence>="0.800"):
+#                             grade="C"
+#                      elif (v=="1" and confidence=="1" and meanconfidence>="0.800"):
+#                             grade="D"
+#                      else:
+#                             grade="F"  
+#                      r={"serialnumber":serialno[counter],
+#                             "grade":grade}
+                     
+#                      print(r)
+#                      b=json.dumps(r)
+#                      serializeobj=ScannerSerializer(data=request.data)
+                            
+#                      if serializeobj.is_valid():
+#                             device=serializeobj.save()
+#                             obj = ScannerTable.objects.get(pk=device.id)
+#                                    # print( device.id)
+            
+#                             detailObj=ScannerTable.objects.filter(pk=device.id).update(grade=b)
+#                      bj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(numbers=gh)                     
+                                                               
+#                      if i==printstopdata-1  :
+                                   
+#                             s = socket.socket()
+#                             port=34567
+#                             s.connect(('192.168.200.150', port))
+              
+#                             message= "F0\x04"
+#                             s.send(message.encode()) 
+#                             data7=s.recv(1024).decode() 
+#                             print('Received from server: ' + data7)
+#                             break
+#                             # m=m+1                       
+#                      counter=counter+1
+                     
+                                         
+#               jno = json.dumps(h) 
+             
+              
+             
+#               obj = PrinterdataTable.objects.get(id=request.data["id"])
+#                                    # print( device.id)
+#               #print(obj.gtin)
+#               detailObj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(printed_numbers=jno)
+#               updatedjson=json.loads(jno)
+#               # print(updatedjson)
+#               io=len(updatedjson)
+#               c1=1
+#               c2=0
+#               for y in range(io):
+#                             # print(updatedjson) 
+#                      if(serialno[c1]==updatedjson[c2]):
+#                                    # serialno.remove(serialno[c1])
+#                             serialno.remove(serialno[c1]) 
+#                      else: 
+#                             c1=c1+1 
+#                      c2=c2+1            #now it became correct   
+#              # print(serialno)
+#               gh=json.dumps(serialno)
+#               obj = PrinterdataTable.objects.get(id=request.data["id"])
+#               detailObj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(numbers=gh)             
+#               return Response(200)  
+# ...........................................................
+class ClientCommunication(APIView):
+       def get(self,request):
+                                  # global data7                    
+              s = socket.socket()
+              port=34567
+              s.connect(('192.168.200.150', port))
+       
+              message= "F0\x04"
+              s.send(message.encode()) 
+              data7=s.recv(1024).decode() 
+              print('Received from server: ' + data7)
+              return Response(200)                  
+       def printfun(self,gtin,lot,expire,serialno,printstopdata,printingtype,hrfkey,hrfvalue):
+              self.gtin=gtin 
+              self.lot=lot
+              self.expire=expire
+              self.serialno=serialno
+              self.printstop=printstopdata
+              self.printingtype=printingtype
+              self.hrfkey=hrfkey
+              self.hrfvalue=hrfvalue
+              # v=len(serialno)
+              print(printingtype)
+              s = socket.socket()
+              port=34567
+              s.connect(('192.168.200.150', port))
+              # gtinarray=["676878","8967868"]
+              # slnoarray=["","33333","444444","555555","4545545","222222"]
+                 
+              
+              if(printingtype=="type2"):
+                     # message18="QAF\x04"
+                     # s.send(message18.encode()) 
+                     # data18=s.recv(1024).decode()                     
+                     message= "L,new7.lbl\x04"
+                     s.send(message.encode()) 
+                     data=s.recv(1024).decode()  
+                     message1= "E\x04"        
+                     s.send(message1.encode()) 
+                     data1=s.recv(1024).decode()  
+                     
+                                   
+                                   
+                     for sn in serialno:
+                            
+                            
+                            
+                                   message5= "QAH\x09datamatrix\x09gtin1\x09gtinvalue\x09"+ "lot\x09" +"lotvalue\x09"+"exp\x09"+"exp1\x09"+"slno\x09"+"slnovalue\x04"
+                                   s.send(message5.encode()) 
+                                   data5=s.recv(1024).decode()
+                                   # print(slno)                    
+                                   # message6= "QAC\x09" + "55555777779(10)45612(21)\x09GTIN\x09" + gtin+"\x09"+ "lot\x09" + lot +"\x09" +"exp\x09" + expire+"\x09"+"serialno\x09"+sn+"\x04"
+                                   message6= "QAC\x09" + "(17)" + expire + "(10)" + lot + "(01)" +  gtin + "(21)" + sn +  "\x09" + "Exp\x09" + expire + "\x09Lot" + "\x09" + lot + "\x09" + "Gtin\x09" +  gtin + "\x09Slno" + "\x09" + sn + "\x04"
+                                   s.send(message6.encode()) 
+                                   data6=s.recv(1024).decode() 
+                                          
+                                   message4= "F2\x04"
+                                   s.send(message4.encode()) 
+                                   data4=s.recv(1024).decode()
+                                   # print(sn)
+                                   # serialno.remove(sn)
+                                   
+                                   
+                     # print(serialno)
+                     print('Received from server: ' + data5)
+                     print('Received from server: ' + data6)         
+                     print('Received from server: ' + data4)
+                     # time.sleep(6.5)
+              elif(printingtype=="type5"):
+                     print("hi")
+                     message7= "L,new8.lbl\x04"
+                     s.send(message7.encode()) 
+                     data7=s.recv(1024).decode()  
+                     message8= "E\x04"        
+                     s.send(message8.encode()) 
+                     data8=s.recv(1024).decode()  
+                     
+                                   
+                                   
+                     for sn in serialno:
+                            
+                            
+                            
+                                   message9= "QAH\x09datamatrix\x09gtin1\x09gtinvalue\x09"+ "lot\x09" +"lotvalue\x09"+"exp\x09"+"exp1\x09"+"slno\x09"+"slnovalue\x09"+"hrf"+"\x09hrfvalue"+"\x04"
+                                   s.send(message9.encode()) 
+                                   data9=s.recv(1024).decode()
+                                   # print(slno)                    
+                                   # message6= "QAC\x09" + "55555777779(10)45612(21)\x09GTIN\x09" + gtin+"\x09"+ "lot\x09" + lot +"\x09" +"exp\x09" + expire+"\x09"+"serialno\x09"+sn+"\x04"
+                                   message10= "QAC\x09" + "(17)" + expire + "(10)" + lot + "(01)" +  gtin + "(21)" + sn + "(45)"+ hrfvalue+ "\x09" + "Exp\x09" + expire + "\x09Lot" + "\x09" + lot + "\x09" + "Gtin\x09" +  gtin + "\x09Slno" + "\x09" + sn +"\x09"+hrfkey+"\x09"+hrfvalue+ "\x04"
+                                   s.send(message10.encode()) 
+                                   data10=s.recv(1024).decode() 
+                                          
+                                   message11= "F2\x04"
+                                   s.send(message11.encode()) 
+                                   data11=s.recv(1024).decode()
+                                   # print(sn)
+                                   # serialno.remove(sn)
+                                   
+                                   
+                     # print(serialno)
+                     print('Received from server: ' + data7)
+                     print('Received from server: ' + data8) 
+                     print('Received from server: ' + data9)
+                     print('Received from server: ' + data10)         
+                     print('Received from server: ' + data11)
+              elif(printingtype=="type1"):
+                     message12= "L,new5.lbl\x04"
+                     s.send(message12.encode()) 
+                     data12=s.recv(1024).decode()  
+                     message13= "E\x04"        
+                     s.send(message13.encode()) 
+                     data13=s.recv(1024).decode()  
+                     
+                                   
+                                   
+                     for sn in serialno:
+                            
+                            
+                            
+                                   message14= "QAH\x09datamatrix\x09gtin1\x09gtinvalue\x09"+ "lot\x09" +"lotvalue\x09"+"exp\x09"+"exp1\x09"+"slno\x09"+"slnovalue\x04"
+                                   s.send(message14.encode()) 
+                                   data14=s.recv(1024).decode()
+                                   # print(slno)                    
+                                   # message6= "QAC\x09" + "55555777779(10)45612(21)\x09GTIN\x09" + gtin+"\x09"+ "lot\x09" + lot +"\x09" +"exp\x09" + expire+"\x09"+"serialno\x09"+sn+"\x04"
+                                   message15= "QAC\x09" + "(17)" + expire + "(10)" + lot + "(01)" +  gtin + "(21)" + sn +"(45)"+ hrfvalue +  "\x09" + "Exp\x09" + expire + "\x09Lot" + "\x09" + lot + "\x09" + "GTIN\x09" +  gtin + "\x09Slno" + "\x09" + sn + "\x04"
+                                   s.send(message15.encode()) 
+                                   data15=s.recv(1024).decode() 
+                                          
+                                   message16= "F2\x04"
+                                   s.send(message16.encode()) 
+                                   data16=s.recv(1024).decode()
+                                   # print(sn)
+                                   # serialno.remove(sn)
+                                   
+                                   
+                     # print(serialno)
+                     print('Received from server: ' + data14)
+                     print('Received from server: ' + data15)         
+                     print('Received from server: ' + data16)
+              return Response(200)
+       
+       def post(self,request):  
+              global user_input;     
+              gtin=request.data["gtin"]
+              lot=request.data["lot"]
+              expire=request.data["expiration_date"]
+              id=request.data["id"]
+              serialno=[]
+              serialno=request.data["numbers"]
+              printstopdata=request.data["printstop"]
+              loopbreak=request.data["breakloop"]
+              printingtype=request.data["type"]
+              responsefield=request.data["responsefield"]
+              stopbtnresponse=request.data["stopbtnresponse"]
+              start_pause_btnresponse= request.data["start_pause_btnresponse"]
+              # print(printingtype)
+              pause_stop_btnresponse=request.data["pause_stop_btnresponse"]
+              # print(hrf1)
+              # if(printingtype=="type5" or printingtype=="type1"):
+                 # if u== 4:
+              detailobj= PrinterdataTable.objects.all()
+              detailsObj = PrinterdataTable.objects.get(id=id)
+              # print(detailsObj.product_conn)
+              prodObj=PrinterdataTable.objects.get(gtin=detailsObj.gtin)
+              print(prodObj.gtin)
+              obj = PrinterdataTable.objects.get(id=request.data["id"])
+                                                        # print( device.id)
+                                   #print(obj.gtin)
+              detailObj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(responsefield=responsefield)
+              
+              detailsObj = PrinterdataTable.objects.get(id=id) 
+              prodObj=PrinterdataTable.objects.get(gtin=detailsObj.gtin)
+              print(prodObj.gtin)
+              obj = PrinterdataTable.objects.get(id=request.data["id"])
+                                                        # print( device.id)
+                                   #print(obj.gtin)
+              detailObj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(stopbtnresponse=stopbtnresponse,start_pause_btnresponse= start_pause_btnresponse,pause_stop_btnresponse=pause_stop_btnresponse) 
+              hrf=request.data["hrf"]
+              hrfjson=json.loads(hrf)
+                    
+              hrf1value=hrfjson["hrf1value"]
+              hrf1key=hrfjson["hrf1"]
+              hrf2value=hrfjson["hrf2value"]
+              hrf2key=hrfjson["hrf2"]
+              hrf3value=hrfjson["hrf3value"]
+              hrf3key=hrfjson["hrf3"]
+              hrf4value=hrfjson["hrf4value"]
+              hrf4key=hrfjson["hrf4"]
+              hrf5key=hrfjson["hrf5"]
+              hrf5value=hrfjson["hrf5value"]
+              hrf6key=hrfjson["hrf6"]
+              hrf6value=hrfjson["hrf6value"]
+              if(hrf1key!="" or hrf1key!="null"):
+                     hrfkey=hrf1key
+              elif(hrf2key!="" or hrf2key!="null"):
+                     hrfkey=hrf2key
+              elif(hrf3key!="" or hrf3key!="null"):
+                     hrfkey=hrf3key
+              elif(hrf4key!="" or hrf4key!="null"):
+                            hrfkey=hrf4key
+              elif(hrf5key!="" or hrf5key!="null"):
+                            hrfkey=hrf5key
+              elif(hrf6key!="" or hrf6key!="null"):
+                            hrfkey=hrf6key
+              else:
+                     hrfkey="null"
+              if(hrf1value!="" or hrf1value!="null"):
+                     hrfvalue=hrf1value
+              elif(hrf2value!="" or hrf2value!="null"):
+                     hrfvalue=hrf2value
+              elif(hrf3value!="" or hrf3value!="null"):
+                     hrfvalue=hrf3value
+              elif(hrf4value!="" or hrf4value!="null"):
+                     hrfvalue=hrf4value
+              elif(hrf5value!="" or hrf5value!="null"):
+                     hrfvalue=hrf5value
+              elif(hrf6value!="" or hrf6value!="null"):
+                     hrfvalue=hrf6value
+              else:
+                     hrfvalue="null"                           
+                     
+              # quantity=request.data["quantity"]
+              self.printfun(gtin,lot,expire,serialno,printstopdata,printingtype,hrfkey,hrfvalue)
+             
+           
+              
+              s = socket.socket()
+              port=2001
+              # timeout=3
+              s.connect(('192.168.200.134', port)) 
+              t=len(serialno)
+              # print(t)
+             
+              counter=0
+              u=[]
+              z=5
+              
+              # serialnumber=["11","22","33","44","55","66","77","88","99","10"]
+              
+              for j in range(t):
+                                            # print(j)
+                                
+                     user_input =int(request.data["printstop"])
+                          
+                       
+                           
+                     while z>user_input: 
+                            user_input =int(request.data["printstop"])
+                            # print(serialno[counter])
+                            
+                            
+                            data=s.recv(1024).decode()
+                            print(data)                                         
+                            v=data[0]
+                            meanconfidence=data[2:7]
+                            confidence=data[1]
+                                   
+                            u.append(serialno[counter])
+                                   
+                            jso = json.dumps(u) 
+                            
+                            print(serialno[counter])
+                            
+                            if(v=="4" and confidence=="1" and meanconfidence>="0.800"):
+                                                grade="A"
+                            elif(v=="3" and confidence=="1" and meanconfidence>="0.800"):
+                                   grade="B"
+                            elif (v=="2" and confidence=="1" and meanconfidence>="0.800"):
+                                   grade="C"
+                            elif (v=="1" and confidence=="1" and meanconfidence>="0.800"):
+                                   grade="D"
+                            else:
+                                   grade="F"  
+                            r={"serialnumber":serialno[counter],
+                                   "grade":grade}
+                            print(r)
+                            b=json.dumps(r)
+                            serializeobj=ScannerSerializer(data=request.data)
+                            
+                            if serializeobj.is_valid():
+                              device=serializeobj.save()
+                              obj = ScannerTable.objects.get(pk=device.id)
+                                   # print( device.id)
+            
+                              detailObj=ScannerTable.objects.filter(pk=device.id).update(grade=b)
+                            #   bj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(numbers=gh)  
+                            
+                            obj = PrinterdataTable.objects.get(id=request.data["id"])
+                                                        # print( device.id)
+                                   #print(obj.gtin)
+                            detailObj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(printed_numbers=jso)
+                            updatedjson=json.loads(jso)
+                            serialno.remove(serialno[counter])
+                            gh=json.dumps(serialno)
+                            obj = PrinterdataTable.objects.get(id=request.data["id"])
+                            detailObj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(numbers=gh)
+                            
+                          
+                     time.sleep(6)
+                                      
+                     # user_input =int(request.data["printstop"])
+                        
+                 
+                     # print('Received from server: ' + data7)
+                     # print(serialnumber[counter])   
+                     
+                     r = requests.delete( request.data["printstop"] )
+                     
+                    
+                     
+              # if(user_input==0):        
+              #        return Response(200)
+              # else:
+              return Response(200)  
+        
+                                  
+class PrinterprepareView(APIView):
+                      
+       def post(self,request):
+              gtin=request.data["gtin"]
+              preparebuttonresponse=request.data["preparebuttonresponse"]
+              id=request.data["id"] 
+              detailsObj = PrinterdataTable.objects.get(id=id) 
+              prodObj=PrinterdataTable.objects.get(gtin=detailsObj.gtin)
+              print(prodObj.gtin)
+              obj = PrinterdataTable.objects.get(id=request.data["id"])
+                                                        # print( device.id)
+                                   #print(obj.gtin)
+              detailObj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(preparebuttonresponse=preparebuttonresponse)               
+              s = socket.socket()
+              port=34567
+              s.connect(('192.168.200.150', port))
+              message17="QAF\x04"
+              s.send(message17.encode()) 
+              data17=s.recv(1024).decode() 
+              
+              
+              # message18= "F0\x04"
+              # s.send(message18.encode()) 
+              # data18=s.recv(1024).decode() 
+              
+                                        
+              print('Received from server: ' + data17)
+              # print('Received from server: ' + data18)
+              
+              # if(d==0):
+              #        # print("hi")                         
+              #       os._exit(1)
+              # else:
+              #   print("not")
+         
+              
+                                         
+              return Response(200)
+       
+# class PrinterprepareGetView(APIView) :
+#        def get(self, request, id):
+#              detailsObj = PrinterdataTable.objects.all().filter(id=id)
+#              serializeObj = CheckboxSerializer(detailsObj, many=True)
+#              return Response(serializeObj.data)                          
+class PrinterStopView(APIView):
+       def post(self,request):
+              d=request.data["breakloop"]
+              printingtype=request.data["type"]
+              # stopbtnresponse=request.data["stopbtnresponse"]
+              # start_pause_btnresponse=request.data["start_pause_btnresponse"]
+              pause_stop_btnresponse=request.data["pause_stop_btnresponse"]
+              # print(stopbtnresponse)
+              id=request.data["id"]   
+              gtin=request.data["gtin"] 
+              
+              detailsObj = PrinterdataTable.objects.get(id=id) 
+              prodObj=ProductionOrder.objects.get(gtin_number=detailsObj.gtin)
+              detailObj=ProductionOrder.objects.filter(gtin_number=prodObj.gtin_number).update(status="Paused")
+               
+              detailsObj = PrinterdataTable.objects.get(id=id) 
+              prodObj=PrinterdataTable.objects.get(gtin=detailsObj.gtin)
+              print(prodObj.gtin)
+              obj = PrinterdataTable.objects.get(id=request.data["id"])
+                                                        # print( device.id)
+                                   #print(obj.gtin)
+              detailObj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(pause_stop_btnresponse=pause_stop_btnresponse)                
+              s = socket.socket()
+              port=34567
+              s.connect(('192.168.200.150', port))
+              message17="QAF\x04"
+              s.send(message17.encode()) 
+              data17=s.recv(1024).decode() 
+              
+              
+              # message18= "F0\x04"
+              # s.send(message18.encode()) 
+              # data18=s.recv(1024).decode() 
+              
+                                        
+              print('Received from server: ' + data17)
+              # print('Received from server: ' + data18)
+              
+              # if(d==0):
+              #        # print("hi")                         
+              #       os._exit(1)
+              # else:
+              #   print("not")
+         
+                                         
+              return Response(200)
+             
+class PrinterStartView(APIView):
+                           
+       def printfun(self,gtin,lot,expire,serialno,printstopdata,printingtype,hrfkey,hrfvalue):
+              self.gtin=gtin 
+              self.lot=lot
+              self.expire=expire
+              self.serialno=serialno
+              self.printstop=printstopdata
+              self.printingtype=printingtype
+              self.hrfkey=hrfkey
+              self.hrfvalue=hrfvalue
+              # v=len(serialno)
+              print(printingtype)
+              s = socket.socket()
+              port=34567
+              s.connect(('192.168.200.150', port))
+              # gtinarray=["676878","8967868"]
+              # slnoarray=["","33333","444444","555555","4545545","222222"]
+                 
+              
+              if(printingtype=="type2"):
+                     message= "L,new7.lbl\x04"
+                     s.send(message.encode()) 
+                     data=s.recv(1024).decode()  
+                     message1= "E\x04"        
+                     s.send(message1.encode()) 
+                     data1=s.recv(1024).decode()  
+                     
+                                   
+                                   
+                     for sn in serialno:
+                            
+                            
+                            
+                                   message5= "QAH\x09datamatrix\x09gtin1\x09gtinvalue\x09"+ "lot\x09" +"lotvalue\x09"+"exp\x09"+"exp1\x09"+"slno\x09"+"slnovalue\x04"
+                                   s.send(message5.encode()) 
+                                   data5=s.recv(1024).decode()
+                                   # print(slno)                    
+                                   # message6= "QAC\x09" + "55555777779(10)45612(21)\x09GTIN\x09" + gtin+"\x09"+ "lot\x09" + lot +"\x09" +"exp\x09" + expire+"\x09"+"serialno\x09"+sn+"\x04"
+                                   message6= "QAC\x09" + "(17)" + expire + "(10)" + lot + "(01)" +  gtin + "(21)" + sn +  "\x09" + "Exp\x09" + expire + "\x09Lot" + "\x09" + lot + "\x09" + "Gtin\x09" +  gtin + "\x09Slno" + "\x09" + sn + "\x04"
+                                   s.send(message6.encode()) 
+                                   data6=s.recv(1024).decode() 
+                                          
+                                   message4= "F2\x04"
+                                   s.send(message4.encode()) 
+                                   data4=s.recv(1024).decode()
+                                   # print(sn)
+                                   # serialno.remove(sn)
+                                   
+                                   
+                     # print(serialno)
+                     print('Received from server: ' + data5)
+                     print('Received from server: ' + data6)         
+                     print('Received from server: ' + data4)
+                     # time.sleep(6.5)
+              elif(printingtype=="type5"):
+                     # print("hi")
+                     message7= "L,new8.lbl\x04"
+                     s.send(message7.encode()) 
+                     data7=s.recv(1024).decode()  
+                     message8= "E\x04"        
+                     s.send(message8.encode()) 
+                     data8=s.recv(1024).decode()  
+                     
+                                   
+                                   
+                     for sn in serialno:
+                            
+                            
+                            
+                                   message9= "QAH\x09datamatrix\x09gtin1\x09gtinvalue\x09"+ "lot\x09" +"lotvalue\x09"+"exp\x09"+"exp1\x09"+"slno\x09"+"slnovalue\x09"+"hrf"+"\x09hrfvalue"+"\x04"
+                                   s.send(message9.encode()) 
+                                   data9=s.recv(1024).decode()
+                                   # print(slno)                    
+                                   # message6= "QAC\x09" + "55555777779(10)45612(21)\x09GTIN\x09" + gtin+"\x09"+ "lot\x09" + lot +"\x09" +"exp\x09" + expire+"\x09"+"serialno\x09"+sn+"\x04"
+                                   message10= "QAC\x09" + "(17)" + expire + "(10)" + lot + "(01)" +  gtin + "(21)" + sn + "(45)"+ hrfvalue+ "\x09" + "Exp\x09" + expire + "\x09Lot" + "\x09" + lot + "\x09" + "Gtin\x09" +  gtin + "\x09Slno" + "\x09" + sn +"\x09"+hrfkey+"\x09"+hrfvalue+ "\x04"
+                                   s.send(message10.encode()) 
+                                   data10=s.recv(1024).decode() 
+                                          
+                                   message11= "F2\x04"
+                                   s.send(message11.encode()) 
+                                   data11=s.recv(1024).decode()
+                                   # print(sn)
+                                   # serialno.remove(sn)
+                                   
+                                   
+                     # print(serialno)
+                     print('Received from server: ' + data7)
+                     print('Received from server: ' + data8) 
+                     print('Received from server: ' + data9)
+                     print('Received from server: ' + data10)         
+                     print('Received from server: ' + data11)
+              elif(printingtype=="type1"):
+                     message12= "L,new5.lbl\x04"
+                     s.send(message12.encode()) 
+                     data12=s.recv(1024).decode()  
+                     message13= "E\x04"        
+                     s.send(message13.encode()) 
+                     data13=s.recv(1024).decode()  
+                     
+                                   
+                                   
+                     for sn in serialno:
+                            
+                            
+                            
+                                   message14= "QAH\x09datamatrix\x09gtin1\x09gtinvalue\x09"+ "lot\x09" +"lotvalue\x09"+"exp\x09"+"exp1\x09"+"slno\x09"+"slnovalue\x04"
+                                   s.send(message14.encode()) 
+                                   data14=s.recv(1024).decode()
+                                   # print(slno)                    
+                                   # message6= "QAC\x09" + "55555777779(10)45612(21)\x09GTIN\x09" + gtin+"\x09"+ "lot\x09" + lot +"\x09" +"exp\x09" + expire+"\x09"+"serialno\x09"+sn+"\x04"
+                                   message15= "QAC\x09" + "(17)" + expire + "(10)" + lot + "(01)" +  gtin + "(21)" + sn +"(45)"+ hrfvalue +  "\x09" + "Exp\x09" + expire + "\x09Lot" + "\x09" + lot + "\x09" + "GTIN\x09" +  gtin + "\x09Slno" + "\x09" + sn + "\x04"
+                                   s.send(message15.encode()) 
+                                   data15=s.recv(1024).decode() 
+                                          
+                                   message16= "F2\x04"
+                                   s.send(message16.encode()) 
+                                   data16=s.recv(1024).decode()
+                                   # print(sn)
+                                   # serialno.remove(sn)
+                                   
+                                   
+                     # print(serialno)
+                     print('Received from server: ' + data14)
+                     print('Received from server: ' + data15)         
+                     print('Received from server: ' + data16)
+              return Response(200)
+       
+       def post(self,request):  
+              # global data,v,h;     
+              gtin=request.data["gtin"]
+              lot=request.data["lot"]
+              expire=request.data["expiration_date"]
+              id=request.data["id"]
+              serialno=[]
+              serialno=request.data["numbers"]
+              printstopdata=request.data["printstop"]
+              loopbreak=request.data["breakloop"]
+              printingtype=request.data["type"]
+              preparebuttonresponse=request.data["preparebuttonresponse"]
+              pause_stop_btnresponse=request.data["pause_stop_btnresponse"]
+              # print(printingtype)
+              start_pause_btnresponse=request.data["start_pause_btnresponse"]
+              
+              detailsObj = PrinterdataTable.objects.get(id=id) 
+              prodObj=ProductionOrder.objects.get(gtin_number=detailsObj.gtin)
+              detailObj=ProductionOrder.objects.filter(gtin_number=prodObj.gtin_number).update(status="Running")
+              
+              
+              detailsObj = PrinterdataTable.objects.get(id=id) 
+              prodObj=PrinterdataTable.objects.get(gtin=detailsObj.gtin)
+              print(prodObj.gtin)
+              obj = PrinterdataTable.objects.get(id=request.data["id"])
+                                                        # print( device.id)
+                                   #print(obj.gtin)
+              detailObj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(preparebuttonresponse=preparebuttonresponse,start_pause_btnresponse=start_pause_btnresponse, pause_stop_btnresponse= pause_stop_btnresponse)
+              
+              # print(hrf1)
+              # if(printingtype=="type5" or printingtype=="type1"):
+              
+              hrf=request.data["hrf"]
+              hrfjson=json.loads(hrf)
+                    
+              hrf1value=hrfjson["hrf1value"]
+              hrf1key=hrfjson["hrf1"]
+              hrf2value=hrfjson["hrf2value"]
+              hrf2key=hrfjson["hrf2"]
+              hrf3value=hrfjson["hrf3value"]
+              hrf3key=hrfjson["hrf3"]
+              hrf4value=hrfjson["hrf4value"]
+              hrf4key=hrfjson["hrf4"]
+              hrf5key=hrfjson["hrf5"]
+              hrf5value=hrfjson["hrf5value"]
+              hrf6key=hrfjson["hrf6"]
+              hrf6value=hrfjson["hrf6value"]
+              if(hrf1key!="" or hrf1key!="null"):
+                     hrfkey=hrf1key
+              elif(hrf2key!="" or hrf2key!="null"):
+                     hrfkey=hrf2key
+              elif(hrf3key!="" or hrf3key!="null"):
+                     hrfkey=hrf3key
+              elif(hrf4key!="" or hrf4key!="null"):
+                            hrfkey=hrf4key
+              elif(hrf5key!="" or hrf5key!="null"):
+                            hrfkey=hrf5key
+              elif(hrf6key!="" or hrf6key!="null"):
+                            hrfkey=hrf6key
+              else:
+                     hrfkey="null"
+              if(hrf1value!="" or hrf1value!="null"):
+                     hrfvalue=hrf1value
+              elif(hrf2value!="" or hrf2value!="null"):
+                     hrfvalue=hrf2value
+              elif(hrf3value!="" or hrf3value!="null"):
+                     hrfvalue=hrf3value
+              elif(hrf4value!="" or hrf4value!="null"):
+                     hrfvalue=hrf4value
+              elif(hrf5value!="" or hrf5value!="null"):
+                     hrfvalue=hrf5value
+              elif(hrf6value!="" or hrf6value!="null"):
+                     hrfvalue=hrf6value
+              else:
+                     hrfvalue="null"                           
+                     
+              # quantity=request.data["quantity"]
+              self.printfun(gtin,lot,expire,serialno,printstopdata,printingtype,hrfkey,hrfvalue)
+              
+            
+                                         
+              return Response(200)             
+                
+class LooopStopView(APIView):
+                             
+       def post(self,request):
+              # time.sleep(3)                    
+              gtin=request.data["gtin"]
+              id=request.data["id"]
+              serialno=request.data["numbers"]
+              # print(serialno)
+              return_slno_btn_response=request.data["return_slno_btn_response"]
+              c1=0
+              hf=len(serialno)
+              for i in range(hf):
+                     serialno.remove(serialno[c1])
+                     break
+              y=[]
+              
+              detailsObj = PrinterdataTable.objects.get(id=id)
+              prodObj=PrinterdataTable.objects.get(gtin=detailsObj.gtin)
+              y.append(serialno)
+              jyo = json.dumps(y)
+               
+              detailObj2=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(balanced_serialnumbers=jyo,status="Printed",return_slno_btn_response=return_slno_btn_response)
+              # updatedjson=json.loads(jno)
+              # io=len(updatedjson)
+              y.clear()  
+  
+             
+              
+              # gh=json.dumps(serialno)
+              
+              obj = PrinterdataTable.objects.get(id=request.data["id"])
+              detailObj=PrinterdataTable.objects.filter(gtin=prodObj.gtin).update(numbers=y)
+              s = socket.socket()
+              port=34567
+              s.connect(('192.168.200.150', port))
+              
+              message20= "F0\x04"
+              s.send(message20.encode()) 
+              data20=s.recv(1024).decode() 
+              
+              detailsObj = PrinterdataTable.objects.get(id=id) 
+              prodObj=ProductionOrder.objects.get(gtin_number=detailsObj.gtin)
+              detailObj=ProductionOrder.objects.filter(gtin_number=prodObj.gtin_number).update(status="Closed")
+              # serializeobj=PrinterdataTable(data=request.data)
+              # if serializeobj.is_valid():
+              #        serializeobj.save()
+              return Response(200)                    
+
+                  
+# class Checkboxindividualview(APIView):
+#        def get(self,request,id):
+#               detailobj= PrinterdataTable.objects.all().filter(gtin=id)
+#               serializeobj=CheckboxSerializer(detailobj,many=True)
+#               return Response(serializeobj.data)                                                               
+                              
+                            
+# class ScannerCommunicationView(APIView):
+                             
+#               def get(self,request):
+#                      # s = socket.socket()
+#                      # port=2001
+#                      # s.connect(('192.168.200.134', port))
+#                      i=1
+#                      while i<10:
+#                             # data=s.recv(1024).decode()
+#                      # v=int(data)
+#                      # while (v < 8):
+#                      #        data=s.recv(1024).decode()
+#                      #        z=int(data)                       
+#                      # #      print(z)
+#                      # # return Response(z)
+                      
+#                      # # valuearr=[]
+#                      #        i=8
+#                      #        if z< i:
+#                      #               data=s.recv(1024).decode()
+#                      #               w=int(data)
+                            
+#                             print(i)
+#                             i=i+1       
+#                             return Response(i)
+                            
+class ScannerCommunicationView(APIView):
+       def get(self,request):
+              detailobj=ScannerTable.objects.all()
+             
+              
+              serializeobj=ScannerSerializer(detailobj,many=True)
+              return Response(serializeobj.data)                     
+                           
+       def post(self,request):
+                     detailobj= ScannerTable.objects.all()
+                                      
+              # def getval():
+                     s = socket.socket()
+                     port=2001
+                     s.connect(('192.168.200.134', port))             
+                     dummycount = 8
+                     data=s.recv(1024).decode()
+                     # print(data)
+                     v=data[0]
+                     h=data[38:]
+                     # print(v)
+                     # print(h)
+                     g=int(v)
+                     while (g < dummycount):
+                            data=s.recv(1024).decode()
+                            v=data[0]
+                            h=data[38:]
+                            # print(h)
+                                               
+                            dummycount = dummycount + 1
+                            # print(v)
+                            # print(h)
+                            # print(data)
+                            if v=="4":
+                               grade="A"
+                            elif v=="3":
+                                   grade="B"
+                            elif v=="2":
+                                   grade="C"
+                            elif v=="1":
+                                   grade="D"
+                            else:
+                                   grade="F"  
+                            r={"serialnumber":h,
+                               "grade":grade}
+                            # print(r)                                              
+                            # l=[]
+                            # j=[]
+                            # l.append(h)
+                            # j.append(grade)
+                            
+                            # gradewithserialno = dict(zip(l, j))
+                       
+                            b=json.dumps(r)
+                            serializeobj=ScannerSerializer(data=request.data)
+                            
+                            if serializeobj.is_valid():
+                                   device=serializeobj.save()
+                                   obj = ScannerTable.objects.get(pk=device.id)
+                                   # print( device.id)
+            
+                            detailObj=ScannerTable.objects.filter(pk=device.id).update(grade=b)
+                            print(device.id)
+                            # print(b)
+                            # for i in l:
+                            #        response={
+                            #               "result":i
+                            #               }
+                            #        print(response)
+                                                
+             
+              
+                     return Response(200)
+class Deletescanner(APIView):
+       def get(self, request):
+              try:
+                     detailsObj = ScannerTable.objects.all()
+              except:
+                     return Response("Not found in database")
+
+              detailsObj.delete()
+              return Response(200)       
+
+# class ScannerCommunicationView(AsyncWebsocketConsumer,APIView):
+#        def get(self,request):
+#               async def connect(self):
+#                      await self.accept()
+#                      # s = socket.socket()
+#                      # port=2001
+#                      # s.connect(('192.168.200.134', port))       
+#               async def disconnect(self, close_code):
+#                      pass
+#               async def receive(self, text_data):
+#                      pass
+#               return Response(200)
+                                             
+
+MODELS
+class PrinterdataTable(models.Model):
+                        
+        id=models.AutoField(primary_key=True)
+        processordernumber=models.CharField(max_length=100,unique= True)
+        # serialnumberjson=models.TextField(max_length=10000,null=True,blank=True)
+        
+      
+        
+        expiration_date = models.DateField(null=True)
+        # gtin = models.ForeignKey(Gtins, on_delete= models.CASCADE)
+        lot=models.CharField(max_length=100,null=True)
+        gtin=models.CharField(max_length=100,unique= True,null=True)
+        numbers=models.JSONField(null=True,blank=True)
+        quantity= models.CharField(max_length=20,null=True)
+        hrf= models.JSONField(null=True,blank=True)
+        type=models.CharField(max_length=100,null=True)
+        status=models.CharField(max_length=100,null=True)
+        ip_address=models.CharField(max_length=100,null=True)
+        printed_numbers=models.JSONField(null=True)
+        balanced_serialnumbers=models.JSONField(null=True)
+        responsefield=models.BooleanField(null=True)
+        preparebuttonresponse=models.BooleanField(null=True)
+        stopbtnresponse=models.BooleanField(null=True)
+        start_pause_btnresponse=models.BooleanField(null=True)
+        pause_stop_btnresponse=models.BooleanField(null=True)
+        return_slno_btn_response=models.BooleanField(null=True)
+        def __str__(self):
+                return str(self. id)
+
+URLS
+ path('printer/', views.printerview.as_view()),
+   # path('printer/update/<int:id>/', views.Printerupdateview.as_view()),
+   path('printer/<int:id>/',views.Printerindividualview.as_view()),
+   path('printergtin/<int:id>/',views.Printergtinview.as_view()),
+   path('printerip/', views.Printeripview.as_view()),
+   path('printerip/<id>/', views.Printeripgetview.as_view()),
+   path('clientcommunication/',views.ClientCommunication.as_view()), 
+   # path('clientcommunication1/',views.ClientCommunication1.as_view()), 
+   # path('systemip/', views.SystIp),
+   path('scannerdata/',views.ScannerCommunicationView.as_view()),
+   path('scannerdatadelete/',views.Deletescanner.as_view()),
+   path('printerprepare/',views.PrinterprepareView.as_view()),
+   # path('printerprepare/<int:id>/',views.PrinterprepareGetView.as_view()),
+   path('printerstop/',views.PrinterStopView.as_view()),
+   
+   path('printerstart/',views.PrinterStartView.as_view()),
+   path('loopstop/',views.LooopStopView.as_view()), 
+   
+                            
+                                                                  
+              
+             
